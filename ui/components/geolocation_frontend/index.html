@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AgriPredict Geolocation</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        margin: 0;
+        font: 14px/1.3 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        padding: 10px 12px;
+        opacity: 0.9;
+      }
+      .small {
+        font-size: 12px;
+        opacity: 0.85;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div><strong>Requesting browser location…</strong></div>
+    <div class="small">If prompted, click <code>Allow</code>.</div>
+    <script>
+      // Minimal Streamlit component API shim.
+      // This avoids any external CDN dependency (common proxy/firewall issue).
+      const Streamlit = (() => {
+        const API_VERSION = 1;
+        const RENDER_EVENT = "streamlit:render";
+        const listeners = new Map();
+        let registered = false;
+        let lastFrameHeight = null;
+
+        function addEventListener(type, handler) {
+          const arr = listeners.get(type) || [];
+          arr.push(handler);
+          listeners.set(type, arr);
+        }
+
+        function dispatchEvent(event) {
+          const arr = listeners.get(event.type) || [];
+          for (const h of arr) {
+            try {
+              h(event);
+            } catch (e) {
+              // swallow to avoid breaking the component
+            }
+          }
+        }
+
+        function sendBackMsg(type, data) {
+          window.parent.postMessage({ isStreamlitMessage: true, type, ...data }, "*");
+        }
+
+        function onMessageEvent(event) {
+          const type = event.data && event.data["type"];
+          if (type === RENDER_EVENT) {
+            const args = event.data["args"] || {};
+            const detail = { disabled: Boolean(event.data["disabled"]), args, theme: event.data["theme"] };
+            dispatchEvent(new CustomEvent(RENDER_EVENT, { detail }));
+          }
+        }
+
+        function setComponentReady() {
+          if (!registered) {
+            window.addEventListener("message", onMessageEvent);
+            registered = true;
+          }
+          sendBackMsg("streamlit:componentReady", { apiVersion: API_VERSION });
+        }
+
+        function setComponentValue(value) {
+          sendBackMsg("streamlit:setComponentValue", { value, dataType: "json" });
+        }
+
+        function setFrameHeight(height) {
+          const h = typeof height === "number" ? height : document.body.scrollHeight;
+          if (lastFrameHeight === h) return;
+          lastFrameHeight = h;
+          sendBackMsg("streamlit:setFrameHeight", { height: h });
+        }
+
+        return {
+          API_VERSION,
+          RENDER_EVENT,
+          events: { addEventListener },
+          setComponentReady,
+          setComponentValue,
+          setFrameHeight,
+        };
+      })();
+
+      function sendValue(value) {
+        Streamlit.setComponentValue(value);
+      }
+
+      function isSecureGeolocationContext() {
+        const host = window.location.hostname;
+        const proto = window.location.protocol;
+        const isLocalhost = host === "localhost" || host === "127.0.0.1";
+        const isHttps = proto === "https:";
+        return isHttps || isLocalhost;
+      }
+
+      function isGeolocationAllowedByPolicy() {
+        // In some browsers, geolocation can be blocked in iframes via Permissions Policy.
+        const policy = document.permissionsPolicy || document.featurePolicy;
+        if (policy && typeof policy.allowsFeature === "function") {
+          return policy.allowsFeature("geolocation");
+        }
+        return true; // Can't detect; assume allowed.
+      }
+
+      function requestLocation(args) {
+        sendValue({ status: "requesting" });
+
+        if (!isSecureGeolocationContext()) {
+          sendValue({
+            error:
+              "Geolocation requires HTTPS (or localhost). Open the Local URL (http://localhost:8501) instead of the Network URL.",
+          });
+          return;
+        }
+
+        if (!isGeolocationAllowedByPolicy()) {
+          sendValue({
+            error:
+              "Geolocation is blocked by the browser's Permissions Policy (often happens inside iframes). If this persists, we may need a different approach (city search) or a Streamlit-specific geolocation component.",
+          });
+          return;
+        }
+
+        if (!navigator.geolocation) {
+          sendValue({ error: "Geolocation is not supported by this browser." });
+          return;
+        }
+
+        if (navigator.permissions && navigator.permissions.query) {
+          navigator.permissions
+            .query({ name: "geolocation" })
+            .then((result) => {
+              sendValue({ status: "permission", state: result.state });
+            })
+            .catch(() => {
+              // Ignore; not all browsers allow querying permissions in iframes.
+            });
+        }
+
+        const timeoutMs = typeof args.timeout_ms === "number" ? args.timeout_ms : 10000;
+        const guardTimer = setTimeout(() => {
+          sendValue({
+            error:
+              "Timed out waiting for browser location. Check: (1) you're on http://localhost:8501, (2) site location permission isn't blocked, (3) OS location services are enabled.",
+          });
+        }, timeoutMs + 1500);
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            clearTimeout(guardTimer);
+            sendValue({
+              lat: pos.coords.latitude,
+              lon: pos.coords.longitude,
+              accuracy_m: pos.coords.accuracy,
+            });
+          },
+          (err) => {
+            clearTimeout(guardTimer);
+            sendValue({ error: err.message, code: err.code });
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: timeoutMs,
+            maximumAge: 0,
+          }
+        );
+      }
+
+      function onRender(event) {
+        const args = event.detail.args || {};
+        Streamlit.setFrameHeight(90);
+        requestLocation(args);
+      }
+
+      Streamlit.events.addEventListener(Streamlit.RENDER_EVENT, onRender);
+      Streamlit.setComponentReady();
+    </script>
+  </body>
+</html>
+
