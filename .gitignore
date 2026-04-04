@@ -29,6 +29,5 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Project artifacts
-artifacts/
+
 *.onnx

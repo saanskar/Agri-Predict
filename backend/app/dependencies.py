@@ -27,7 +27,6 @@ from __future__ import annotations
 import os
 from functools import lru_cache
 
-import httpx
 from fastapi import Request
 
 from backend.app.services.inference.runtime import ArtifactEnsembleInferenceService

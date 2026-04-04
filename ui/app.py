@@ -22,7 +22,7 @@ from ui.components.geolocation import get_browser_location  # noqa: E402
 
 
 def _api_base_url() -> str:
-    return os.environ.get("AGRIPREDICT_API_BASE_URL", "http://127.0.0.1:8000")
+    return os.environ.get("AGRIPREDICT_API_BASE_URL", "https://agri-predict-v4em.onrender.com")
 
 
 def _post_recommendations(payload: dict[str, Any]) -> dict[str, Any]:
