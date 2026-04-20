@@ -72,8 +72,9 @@ def npk_bar(n: float, p: float, k: float) -> go.Figure:
         marker=dict(color=colours, opacity=0.88,
                     line=dict(color="rgba(61,220,132,0.45)", width=1)),
         text=[f"{v:.0f} kg/ha" for v in vals],
-        textposition="auto",
-        textfont=dict(size=10, family=_MONO),
+        textposition="outside",
+        textfont=dict(size=10, family=_MONO, color="#374151"),
+        cliponaxis=False,
         hovertemplate="%{y}: <b>%{x:.0f} kg/ha</b><extra></extra>",
     ))
     fig.add_trace(go.Scatter(
@@ -88,7 +89,7 @@ def npk_bar(n: float, p: float, k: float) -> go.Figure:
         **_BASE,
         barmode="group", height=210,
         xaxis=dict(**_AXIS, title="kg / ha",
-                   range=[0, max(vals + ideals + [1]) * 1.25]),
+                   range=[0, max(vals + ideals + [1]) * 1.45]),
         yaxis=dict(**_AXIS),
         legend=dict(orientation="h", y=1.12, x=0,
                     bgcolor="rgba(0,0,0,0)", font=dict(size=10)),

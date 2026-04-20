@@ -1,12 +1,48 @@
 """
 AgriPredict — About Page
 ==========================
-Project overview, ML architecture, tech stack.
-No raw HTML code blocks, no API reference in UI.
+Project overview, ML architecture, tech stack, dataset.
+All grids use st.columns() for proper responsive layout.
 """
 
 from __future__ import annotations
 import streamlit as st
+
+
+def _card(ico: str, title: str, desc: str, green: bool = False) -> str:
+    bg  = "#F0FDF4" if green else "#FFFFFF"
+    bdr = "#BBF7D0" if green else "#E5E7EB"
+    tc  = "#15803D" if green else "#111827"
+    return f"""
+    <div style="background:{bg};border:1px solid {bdr};border-radius:14px;
+                padding:1.2rem 0.9rem;text-align:center;
+                box-shadow:0 2px 8px rgba(0,0,0,0.05);height:100%">
+        <div style="font-size:1.8rem;margin-bottom:0.5rem">{ico}</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;
+                    font-size:0.88rem;color:{tc};margin-bottom:0.35rem">{title}</div>
+        <div style="font-size:0.74rem;color:#6B7280;line-height:1.6">{desc}</div>
+    </div>"""
+
+
+def _stat(val: str, lbl: str) -> str:
+    return f"""
+    <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                padding:1rem 0.8rem;text-align:center">
+        <div style="font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;
+                    color:#16A34A;font-weight:600;margin-bottom:0.3rem">{lbl}</div>
+        <div style="font-size:1rem;font-weight:700;color:#111827">{val}</div>
+    </div>"""
+
+
+def _tech(ico: str, name: str, desc: str) -> str:
+    return f"""
+    <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                padding:0.9rem 0.7rem;text-align:center;
+                box-shadow:0 1px 3px rgba(0,0,0,0.05)">
+        <div style="font-size:1.3rem;margin-bottom:0.3rem">{ico}</div>
+        <div style="font-size:0.8rem;font-weight:600;color:#111827">{name}</div>
+        <div style="font-size:0.68rem;color:#9CA3AF;margin-top:2px">{desc}</div>
+    </div>"""
 
 
 def render() -> None:
@@ -17,7 +53,7 @@ def render() -> None:
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Project overview ──────────────────────────────────────────
+    # ── Overview ──────────────────────────────────────────────────
     st.markdown("""
     <div class="gc">
         <div class="gc-title">🌾 What is AgriPredict?</div>
@@ -29,9 +65,7 @@ def render() -> None:
         </p>
         <p style="color:#374151;font-size:0.9rem;line-height:1.85;margin:0">
             The system uses an ensemble of three models — Random Forest, XGBoost, and a Neural
-            Network — whose predictions are averaged for higher accuracy than any single model
-            alone. Live weather is fetched automatically from Open-Meteo for the coordinates
-            you provide.
+            Network — whose predictions are averaged for higher accuracy than any single model alone.
         </p>
         <div style="margin-top:1rem;display:flex;gap:0.4rem;flex-wrap:wrap">
             <span class="tag">🤖 ML Ensemble</span>
@@ -49,7 +83,7 @@ def render() -> None:
         st.markdown("""
         <div class="gc" style="height:100%">
             <div class="gc-title">⚠️ The Problem</div>
-            <div style="font-size:0.87rem;color:#374151;line-height:2">
+            <div style="font-size:0.87rem;color:#374151;line-height:2.1">
                 🌾 Many farmers rely on intuition alone<br>
                 📉 Wrong crop choice leads to yield loss<br>
                 🌡️ Ignoring weather wastes water &amp; inputs<br>
@@ -62,7 +96,7 @@ def render() -> None:
         st.markdown("""
         <div class="gc" style="height:100%">
             <div class="gc-title">✅ Our Solution</div>
-            <div style="font-size:0.87rem;color:#374151;line-height:2">
+            <div style="font-size:0.87rem;color:#374151;line-height:2.1">
                 🤖 Ensemble model: RF + XGBoost + Neural Net<br>
                 🌦️ Live weather via Open-Meteo API<br>
                 🧪 NPK + pH as direct model features<br>
@@ -72,133 +106,96 @@ def render() -> None:
         </div>
         """, unsafe_allow_html=True)
 
-    # ── ML Architecture — clean visual cards ──────────────────────
+    # ── ML Architecture — 4 columns ───────────────────────────────
     st.markdown("""
     <div class="gc">
         <div class="gc-title">🧠 Machine Learning Architecture</div>
     """, unsafe_allow_html=True)
 
-    m1, m2, m3, m4 = st.columns(4, gap="small")
-    _card_style = (
-        "background:#F0FDF4;border:1px solid #BBF7D0;border-radius:14px;"
-        "padding:1.2rem 0.9rem;text-align:center;height:100%"
-    )
-    _top_card_style = (
-        "background:#FFFFFF;border:1px solid #E5E7EB;border-radius:14px;"
-        "padding:1.2rem 0.9rem;text-align:center;height:100%;"
-        "box-shadow:0 2px 8px rgba(0,0,0,0.06)"
-    )
-
-    with m1:
-        st.markdown(f"""
-        <div style="{_top_card_style}">
-            <div style="font-size:1.8rem;margin-bottom:0.4rem">🌲</div>
-            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;
-                        font-size:0.9rem;color:#111827;margin-bottom:0.4rem">Random Forest</div>
-            <div style="font-size:0.76rem;color:#6B7280;line-height:1.65">
-                100 decision trees · robust to noise · handles non-linear patterns
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    with m2:
-        st.markdown(f"""
-        <div style="{_top_card_style}">
-            <div style="font-size:1.8rem;margin-bottom:0.4rem">⚡</div>
-            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;
-                        font-size:0.9rem;color:#111827;margin-bottom:0.4rem">XGBoost</div>
-            <div style="font-size:0.76rem;color:#6B7280;line-height:1.65">
-                Gradient boosting · high accuracy on tabular data · feature importance
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    with m3:
-        st.markdown(f"""
-        <div style="{_top_card_style}">
-            <div style="font-size:1.8rem;margin-bottom:0.4rem">🧬</div>
-            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;
-                        font-size:0.9rem;color:#111827;margin-bottom:0.4rem">Neural Network</div>
-            <div style="font-size:0.76rem;color:#6B7280;line-height:1.65">
-                Multi-layer perceptron · captures complex feature interactions
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    with m4:
-        st.markdown(f"""
-        <div style="{_card_style}">
-            <div style="font-size:1.8rem;margin-bottom:0.4rem">🎯</div>
-            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;
-                        font-size:0.9rem;color:#15803D;margin-bottom:0.4rem">Soft Voting Ensemble</div>
-            <div style="font-size:0.76rem;color:#374151;line-height:1.65">
-                Averages all model probabilities · more stable than any single model
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+    ml1, ml2, ml3, ml4 = st.columns(4, gap="small")
+    with ml1:
+        st.markdown(_card("🌲", "Random Forest",
+                          "100 decision trees · robust to noise · non-linear patterns"),
+                    unsafe_allow_html=True)
+    with ml2:
+        st.markdown(_card("⚡", "XGBoost",
+                          "Gradient boosting · high accuracy · feature importance"),
+                    unsafe_allow_html=True)
+    with ml3:
+        st.markdown(_card("🧬", "Neural Network",
+                          "Multi-layer perceptron · captures complex interactions"),
+                    unsafe_allow_html=True)
+    with ml4:
+        st.markdown(_card("🎯", "Soft Voting Ensemble",
+                          "Averages probabilities · more stable than single models",
+                          green=True),
+                    unsafe_allow_html=True)
 
     st.markdown("""
     <div style="margin-top:1rem;padding:0.75rem 1rem;background:#F8FAFC;
                 border-radius:10px;font-size:0.8rem;color:#6B7280">
-        📥 <strong>Inputs:</strong> Nitrogen · Phosphorus · Potassium · Soil pH · Temperature · Humidity · Rainfall
+        📥 <strong>Inputs:</strong>
+        Nitrogen · Phosphorus · Potassium · Soil pH · Temperature · Humidity · Rainfall
         &nbsp;→&nbsp;
         📤 <strong>Output:</strong> Ranked crop list with confidence scores
     </div>
-    """, unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # ── Dataset ───────────────────────────────────────────────────
-    st.markdown("""
-    <div class="gc">
-        <div class="gc-title">📂 Dataset</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0.7rem">
-    """, unsafe_allow_html=True)
-
-    _stats = [
-        ("2,200", "Training Records"),
-        ("22", "Crop Classes"),
-        ("7", "Input Features"),
-        ("Kaggle / UCI", "Source"),
-    ]
-    for val, lbl in _stats:
-        st.markdown(f"""
-        <div class="ib" style="display:inline-block">
-            <div class="ib-l">{lbl}</div>
-            <div class="ib-v">{val}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("""
-        </div>
-        <div style="margin-top:0.9rem;font-size:0.8rem;color:#6B7280">
-            Features: Nitrogen · Phosphorus · Potassium · Temperature · Humidity · Rainfall · pH
-        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Tech stack ────────────────────────────────────────────────
+    # ── Dataset — 4 columns ───────────────────────────────────────
+    st.markdown("""
+    <div class="gc">
+        <div class="gc-title">📂 Dataset</div>
+    """, unsafe_allow_html=True)
+
+    ds1, ds2, ds3, ds4 = st.columns(4, gap="small")
+    with ds1:
+        st.markdown(_stat("2,200", "Training Records"), unsafe_allow_html=True)
+    with ds2:
+        st.markdown(_stat("22", "Crop Classes"), unsafe_allow_html=True)
+    with ds3:
+        st.markdown(_stat("7", "Input Features"), unsafe_allow_html=True)
+    with ds4:
+        st.markdown(_stat("Kaggle / UCI", "Source"), unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="margin-top:0.9rem;font-size:0.8rem;color:#6B7280">
+        Features: Nitrogen · Phosphorus · Potassium · Temperature · Humidity · Rainfall · pH
+    </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Tech Stack — 5 per row on desktop, 2 on tablet, 1 on mobile ──
     st.markdown("""
     <div class="gc">
         <div class="gc-title">⚙️ Technology Stack</div>
-        <div class="ts-g">
     """, unsafe_allow_html=True)
 
     _stack = [
-        ("🐍", "Python 3.11",   "Core language"),
-        ("⚡", "FastAPI",        "Backend REST API"),
-        ("🎈", "Streamlit",      "Frontend dashboard"),
-        ("🌲", "scikit-learn",   "Random Forest"),
-        ("⚡", "XGBoost",        "Gradient boosting"),
-        ("🔥", "PyTorch",        "Neural network"),
-        ("📊", "Plotly",         "Interactive charts"),
-        ("🌤", "Open-Meteo",     "Live weather API"),
-        ("🔗", "httpx",          "HTTP client"),
-        ("📦", "Render.com",     "Cloud deployment"),
+        ("🐍", "Python 3.11",  "Core language"),
+        ("⚡", "FastAPI",       "Backend REST API"),
+        ("🎈", "Streamlit",     "Frontend dashboard"),
+        ("🌲", "scikit-learn",  "Random Forest"),
+        ("⚡", "XGBoost",       "Gradient boosting"),
+        ("🔥", "PyTorch",       "Neural network"),
+        ("📊", "Plotly",        "Interactive charts"),
+        ("🌤", "Open-Meteo",    "Live weather API"),
+        ("🔗", "httpx",         "HTTP client"),
+        ("📦", "Render.com",    "Cloud deployment"),
     ]
-    for ico, name, desc in _stack:
-        st.markdown(f"""
-        <div class="ts-i">
-            <div class="ts-ico">{ico}</div>
-            <strong style="font-size:0.8rem">{name}</strong>
-            <br><span style="font-size:0.68rem;color:#9CA3AF">{desc}</span>
-        </div>
-        """, unsafe_allow_html=True)
 
-    st.markdown("</div></div>", unsafe_allow_html=True)
+    # Row 1: 5 items
+    r1 = st.columns(5, gap="small")
+    for col, (ico, name, desc) in zip(r1, _stack[:5]):
+        with col:
+            st.markdown(_tech(ico, name, desc), unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-top:0.6rem'></div>", unsafe_allow_html=True)
+
+    # Row 2: 5 items
+    r2 = st.columns(5, gap="small")
+    for col, (ico, name, desc) in zip(r2, _stack[5:]):
+        with col:
+            st.markdown(_tech(ico, name, desc), unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)

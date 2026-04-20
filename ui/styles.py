@@ -275,5 +275,63 @@ def inject() -> None:
         .sl-title {{ font-size:1rem !important; }}
         .ph h1 {{ font-size:1.35rem !important; }}
     }}
+
+    /* Mobile hamburger button */
+    [data-testid="collapsedControl"] {{
+        display: flex !important;
+        visibility: visible !important;
+        background: {C_ACCENT} !important;
+        border-radius: 10px !important;
+        color: white !important;
+        box-shadow: 0 2px 8px rgba(22,163,74,0.35) !important;
+        padding: 0.35rem !important;
+        margin: 0.4rem !important;
+        position: fixed !important;
+        top: 0.5rem !important;
+        left: 0.5rem !important;
+        z-index: 99999 !important;
+    }}
+    [data-testid="collapsedControl"] svg {{
+        fill: white !important;
+        stroke: white !important;
+    }}
+
+    /* Mobile top nav dropdown */
+    .mobile-nav {{ display: none; }}
+
+    @media (max-width: 768px) {{
+        .mobile-nav {{
+            display: block !important;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: {C_BG_CARD};
+            padding: 0.5rem 0.5rem 0.4rem;
+            border-bottom: 1px solid {C_BORDER};
+            box-shadow: 0 2px 8px {C_SHADOW};
+            margin-bottom: 0.8rem;
+        }}
+        .mobile-nav .stSelectbox {{ margin: 0 !important; }}
+        .mobile-nav .stSelectbox > div > div {{
+            background: {C_ACCENT_SOFT} !important;
+            border: 1.5px solid {C_ACCENT} !important;
+            border-radius: 10px !important;
+            color: {C_ACCENT} !important;
+            font-weight: 600 !important;
+            font-size: 0.95rem !important;
+        }}
+        [data-testid="stSidebar"] {{ display: none !important; }}
+        .main .block-container {{
+            padding-top: 0.5rem !important;
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+        }}
+        .stButton > button {{
+            min-height: 48px !important;
+            font-size: 1rem !important;
+        }}
+        [data-testid="column"] {{ min-width: 100% !important; }}
+    }}
+    
     </style>
     """, unsafe_allow_html=True)
