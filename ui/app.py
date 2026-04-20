@@ -1,7 +1,8 @@
 """
 AgriPredict Merged — app.py
 ============================
-Main entry point. Run with:  streamlit run app.py
+Single session_state key drives all navigation.
+Both mobile dropdown and desktop sidebar update the same key.
 """
 
 from __future__ import annotations
@@ -21,7 +22,16 @@ from pages import dashboard, predict, weather, soil, history, about
 styles.inject()
 init_session(st)
 
-NAV_ITEMS = {
+# ── Navigation items ──────────────────────────────────────────────────────────
+NAV_LABELS = [
+    "🏠 Dashboard",
+    "🌱 Predict Crop",
+    "🌤 Weather Analytics",
+    "🧪 Soil Health",
+    "📋 History",
+    "📖 About",
+]
+NAV_MAP = {
     "🏠 Dashboard":         "dashboard",
     "🌱 Predict Crop":      "predict",
     "🌤 Weather Analytics": "weather",
@@ -30,17 +40,33 @@ NAV_ITEMS = {
     "📖 About":             "about",
 }
 
-# ── Mobile top navigation (shown only on small screens via CSS) ───────────────
+# Initialise the single routing key
+if "active_page" not in st.session_state:
+    st.session_state.active_page = "🏠 Dashboard"
+
+
+# ── Callback functions — each control calls one of these ─────────────────────
+def _on_mobile_change():
+    st.session_state.active_page = st.session_state._mobile_sel
+
+def _on_sidebar_change():
+    st.session_state.active_page = st.session_state._sidebar_sel
+
+
+# ── Mobile top dropdown (hidden on desktop via CSS) ───────────────────────────
 st.markdown('<div class="mobile-nav">', unsafe_allow_html=True)
-mobile_page = st.selectbox(
+st.selectbox(
     "Navigate",
-    list(NAV_ITEMS.keys()),
-    key="mobile_nav_select",
+    NAV_LABELS,
+    index=NAV_LABELS.index(st.session_state.active_page),
+    key="_mobile_sel",
+    on_change=_on_mobile_change,
     label_visibility="collapsed",
 )
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ── Sidebar ───────────────────────────────────────────────────────────────────
+
+# ── Sidebar (hidden on mobile via CSS) ────────────────────────────────────────
 with st.sidebar:
     st.markdown("""
     <div class="sl">
@@ -49,15 +75,18 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    page_label = st.radio(
+    st.radio(
         "Navigation",
-        list(NAV_ITEMS.keys()),
-        key="sidebar_nav",
+        NAV_LABELS,
+        index=NAV_LABELS.index(st.session_state.active_page),
+        key="_sidebar_sel",
+        on_change=_on_sidebar_change,
         label_visibility="collapsed",
     )
 
     st.markdown("<hr style='border-color:#F3F4F6;margin:0.9rem 0 0.6rem'/>",
                 unsafe_allow_html=True)
+
     with st.spinner("Checking API…"):
         api_ok = check_api_health()
 
@@ -79,19 +108,8 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-# ── Resolve active page: mobile selectbox wins on mobile, sidebar on desktop ──
-# Both controls update session state; we check screen width via CSS class trick.
-# Simpler: just sync — whichever changed last wins. We use sidebar on desktop,
-# mobile selectbox on mobile. Since both are rendered, we pick mobile_nav_select
-# when sidebar default hasn't changed from session init, otherwise sidebar.
-import streamlit.components.v1 as _components
 
-# Determine active page key
-page_key = NAV_ITEMS.get(mobile_page, "dashboard")
-# Sidebar radio overrides when user explicitly clicks it
-if "sidebar_nav" in st.session_state:
-    page_key = NAV_ITEMS.get(st.session_state["sidebar_nav"], page_key)
-
+# ── Route to active page ──────────────────────────────────────────────────────
 _PAGES = {
     "dashboard": dashboard,
     "predict":   predict,
@@ -100,4 +118,6 @@ _PAGES = {
     "history":   history,
     "about":     about,
 }
+
+page_key = NAV_MAP[st.session_state.active_page]
 _PAGES[page_key].render()
