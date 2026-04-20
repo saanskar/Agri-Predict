@@ -332,6 +332,28 @@ def inject() -> None:
         }}
         [data-testid="column"] {{ min-width: 100% !important; }}
     }}
+
+    /* About page grids — tablet 2 cols, mobile 1 col */
+    @media (max-width: 900px) {{
+        div[style*="grid-template-columns:repeat(5,1fr)"] {{
+            grid-template-columns: repeat(3, 1fr) !important;
+        }}
+        div[style*="grid-template-columns:repeat(4,1fr)"] {{
+            grid-template-columns: repeat(2, 1fr) !important;
+        }}
+    }}
+    @media (max-width: 600px) {{
+        div[style*="grid-template-columns:repeat(5,1fr)"],
+        div[style*="grid-template-columns:repeat(4,1fr)"] {{
+            grid-template-columns: repeat(2, 1fr) !important;
+        }}
+    }}
+    @media (max-width: 400px) {{
+        div[style*="grid-template-columns:repeat(5,1fr)"],
+        div[style*="grid-template-columns:repeat(4,1fr)"] {{
+            grid-template-columns: 1fr !important;
+        }}
+    }}
     
     </style>
     """, unsafe_allow_html=True)

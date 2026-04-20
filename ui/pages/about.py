@@ -1,10 +1,6 @@
 """
 AgriPredict — About Page
-==========================
-Project overview, ML architecture, tech stack, dataset.
-All grids use st.columns() for proper responsive layout.
 """
-
 from __future__ import annotations
 import streamlit as st
 
@@ -16,7 +12,7 @@ def _card(ico: str, title: str, desc: str, green: bool = False) -> str:
     return f"""
     <div style="background:{bg};border:1px solid {bdr};border-radius:14px;
                 padding:1.2rem 0.9rem;text-align:center;
-                box-shadow:0 2px 8px rgba(0,0,0,0.05);height:100%">
+                box-shadow:0 2px 8px rgba(0,0,0,0.05);margin-bottom:0.5rem">
         <div style="font-size:1.8rem;margin-bottom:0.5rem">{ico}</div>
         <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;
                     font-size:0.88rem;color:{tc};margin-bottom:0.35rem">{title}</div>
@@ -27,7 +23,7 @@ def _card(ico: str, title: str, desc: str, green: bool = False) -> str:
 def _stat(val: str, lbl: str) -> str:
     return f"""
     <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
-                padding:1rem 0.8rem;text-align:center">
+                padding:1rem 0.8rem;text-align:center;margin-bottom:0.5rem">
         <div style="font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;
                     color:#16A34A;font-weight:600;margin-bottom:0.3rem">{lbl}</div>
         <div style="font-size:1rem;font-weight:700;color:#111827">{val}</div>
@@ -37,7 +33,7 @@ def _stat(val: str, lbl: str) -> str:
 def _tech(ico: str, name: str, desc: str) -> str:
     return f"""
     <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
-                padding:0.9rem 0.7rem;text-align:center;
+                padding:0.9rem 0.7rem;text-align:center;margin-bottom:0.5rem;
                 box-shadow:0 1px 3px rgba(0,0,0,0.05)">
         <div style="font-size:1.3rem;margin-bottom:0.3rem">{ico}</div>
         <div style="font-size:0.8rem;font-weight:600;color:#111827">{name}</div>
@@ -106,96 +102,157 @@ def render() -> None:
         </div>
         """, unsafe_allow_html=True)
 
-    # ── ML Architecture — 4 columns ───────────────────────────────
+    # ── ML Architecture — responsive grid via HTML ────────────────
     st.markdown("""
     <div class="gc">
         <div class="gc-title">🧠 Machine Learning Architecture</div>
+        <div style="display:grid;
+                    grid-template-columns:repeat(4,1fr);
+                    gap:0.75rem;">
+            <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-radius:14px;
+                        padding:1.2rem 0.9rem;text-align:center;
+                        box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+                <div style="font-size:1.8rem;margin-bottom:0.5rem">🌲</div>
+                <div style="font-weight:700;font-size:0.88rem;color:#111827;margin-bottom:0.35rem">Random Forest</div>
+                <div style="font-size:0.74rem;color:#6B7280;line-height:1.6">100 decision trees · robust to noise · non-linear patterns</div>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-radius:14px;
+                        padding:1.2rem 0.9rem;text-align:center;
+                        box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+                <div style="font-size:1.8rem;margin-bottom:0.5rem">⚡</div>
+                <div style="font-weight:700;font-size:0.88rem;color:#111827;margin-bottom:0.35rem">XGBoost</div>
+                <div style="font-size:0.74rem;color:#6B7280;line-height:1.6">Gradient boosting · high accuracy · feature importance</div>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-radius:14px;
+                        padding:1.2rem 0.9rem;text-align:center;
+                        box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+                <div style="font-size:1.8rem;margin-bottom:0.5rem">🧬</div>
+                <div style="font-weight:700;font-size:0.88rem;color:#111827;margin-bottom:0.35rem">Neural Network</div>
+                <div style="font-size:0.74rem;color:#6B7280;line-height:1.6">Multi-layer perceptron · captures complex interactions</div>
+            </div>
+            <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:14px;
+                        padding:1.2rem 0.9rem;text-align:center;
+                        box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+                <div style="font-size:1.8rem;margin-bottom:0.5rem">🎯</div>
+                <div style="font-weight:700;font-size:0.88rem;color:#15803D;margin-bottom:0.35rem">Soft Voting Ensemble</div>
+                <div style="font-size:0.74rem;color:#374151;line-height:1.6">Averages all probabilities · more stable than single models</div>
+            </div>
+        </div>
+        <div style="margin-top:1rem;padding:0.75rem 1rem;background:#F8FAFC;
+                    border-radius:10px;font-size:0.8rem;color:#6B7280">
+            📥 <strong>Inputs:</strong>
+            Nitrogen · Phosphorus · Potassium · Soil pH · Temperature · Humidity · Rainfall
+            &nbsp;→&nbsp;
+            📤 <strong>Output:</strong> Ranked crop list with confidence scores
+        </div>
+    </div>
     """, unsafe_allow_html=True)
 
-    ml1, ml2, ml3, ml4 = st.columns(4, gap="small")
-    with ml1:
-        st.markdown(_card("🌲", "Random Forest",
-                          "100 decision trees · robust to noise · non-linear patterns"),
-                    unsafe_allow_html=True)
-    with ml2:
-        st.markdown(_card("⚡", "XGBoost",
-                          "Gradient boosting · high accuracy · feature importance"),
-                    unsafe_allow_html=True)
-    with ml3:
-        st.markdown(_card("🧬", "Neural Network",
-                          "Multi-layer perceptron · captures complex interactions"),
-                    unsafe_allow_html=True)
-    with ml4:
-        st.markdown(_card("🎯", "Soft Voting Ensemble",
-                          "Averages probabilities · more stable than single models",
-                          green=True),
-                    unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style="margin-top:1rem;padding:0.75rem 1rem;background:#F8FAFC;
-                border-radius:10px;font-size:0.8rem;color:#6B7280">
-        📥 <strong>Inputs:</strong>
-        Nitrogen · Phosphorus · Potassium · Soil pH · Temperature · Humidity · Rainfall
-        &nbsp;→&nbsp;
-        📤 <strong>Output:</strong> Ranked crop list with confidence scores
-    </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # ── Dataset — 4 columns ───────────────────────────────────────
+    # ── Dataset — responsive grid via HTML ────────────────────────
     st.markdown("""
     <div class="gc">
         <div class="gc-title">📂 Dataset</div>
+        <div style="display:grid;
+                    grid-template-columns:repeat(4,1fr);
+                    gap:0.75rem;margin-bottom:0.9rem">
+            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                        padding:1rem 0.8rem;text-align:center">
+                <div style="font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;
+                            color:#16A34A;font-weight:600;margin-bottom:0.3rem">Training Records</div>
+                <div style="font-size:1rem;font-weight:700;color:#111827">2,200</div>
+            </div>
+            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                        padding:1rem 0.8rem;text-align:center">
+                <div style="font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;
+                            color:#16A34A;font-weight:600;margin-bottom:0.3rem">Crop Classes</div>
+                <div style="font-size:1rem;font-weight:700;color:#111827">22</div>
+            </div>
+            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                        padding:1rem 0.8rem;text-align:center">
+                <div style="font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;
+                            color:#16A34A;font-weight:600;margin-bottom:0.3rem">Input Features</div>
+                <div style="font-size:1rem;font-weight:700;color:#111827">7</div>
+            </div>
+            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                        padding:1rem 0.8rem;text-align:center">
+                <div style="font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;
+                            color:#16A34A;font-weight:600;margin-bottom:0.3rem">Source</div>
+                <div style="font-size:1rem;font-weight:700;color:#111827">Kaggle / UCI</div>
+            </div>
+        </div>
+        <div style="font-size:0.8rem;color:#6B7280">
+            Features: Nitrogen · Phosphorus · Potassium · Temperature · Humidity · Rainfall · pH
+        </div>
+    </div>
     """, unsafe_allow_html=True)
 
-    ds1, ds2, ds3, ds4 = st.columns(4, gap="small")
-    with ds1:
-        st.markdown(_stat("2,200", "Training Records"), unsafe_allow_html=True)
-    with ds2:
-        st.markdown(_stat("22", "Crop Classes"), unsafe_allow_html=True)
-    with ds3:
-        st.markdown(_stat("7", "Input Features"), unsafe_allow_html=True)
-    with ds4:
-        st.markdown(_stat("Kaggle / UCI", "Source"), unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style="margin-top:0.9rem;font-size:0.8rem;color:#6B7280">
-        Features: Nitrogen · Phosphorus · Potassium · Temperature · Humidity · Rainfall · pH
-    </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # ── Tech Stack — 5 per row on desktop, 2 on tablet, 1 on mobile ──
+    # ── Tech Stack — responsive grid via HTML ─────────────────────
     st.markdown("""
     <div class="gc">
         <div class="gc-title">⚙️ Technology Stack</div>
+        <div style="display:grid;
+                    grid-template-columns:repeat(5,1fr);
+                    gap:0.65rem">
+            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                        padding:0.9rem 0.5rem;text-align:center">
+                <div style="font-size:1.3rem;margin-bottom:0.3rem">🐍</div>
+                <div style="font-size:0.78rem;font-weight:600;color:#111827">Python 3.11</div>
+                <div style="font-size:0.65rem;color:#9CA3AF;margin-top:2px">Core language</div>
+            </div>
+            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                        padding:0.9rem 0.5rem;text-align:center">
+                <div style="font-size:1.3rem;margin-bottom:0.3rem">⚡</div>
+                <div style="font-size:0.78rem;font-weight:600;color:#111827">FastAPI</div>
+                <div style="font-size:0.65rem;color:#9CA3AF;margin-top:2px">Backend API</div>
+            </div>
+            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                        padding:0.9rem 0.5rem;text-align:center">
+                <div style="font-size:1.3rem;margin-bottom:0.3rem">🎈</div>
+                <div style="font-size:0.78rem;font-weight:600;color:#111827">Streamlit</div>
+                <div style="font-size:0.65rem;color:#9CA3AF;margin-top:2px">Frontend</div>
+            </div>
+            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                        padding:0.9rem 0.5rem;text-align:center">
+                <div style="font-size:1.3rem;margin-bottom:0.3rem">🌲</div>
+                <div style="font-size:0.78rem;font-weight:600;color:#111827">scikit-learn</div>
+                <div style="font-size:0.65rem;color:#9CA3AF;margin-top:2px">Random Forest</div>
+            </div>
+            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                        padding:0.9rem 0.5rem;text-align:center">
+                <div style="font-size:1.3rem;margin-bottom:0.3rem">⚡</div>
+                <div style="font-size:0.78rem;font-weight:600;color:#111827">XGBoost</div>
+                <div style="font-size:0.65rem;color:#9CA3AF;margin-top:2px">Boosting</div>
+            </div>
+            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                        padding:0.9rem 0.5rem;text-align:center">
+                <div style="font-size:1.3rem;margin-bottom:0.3rem">🔥</div>
+                <div style="font-size:0.78rem;font-weight:600;color:#111827">PyTorch</div>
+                <div style="font-size:0.65rem;color:#9CA3AF;margin-top:2px">Neural Net</div>
+            </div>
+            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                        padding:0.9rem 0.5rem;text-align:center">
+                <div style="font-size:1.3rem;margin-bottom:0.3rem">📊</div>
+                <div style="font-size:0.78rem;font-weight:600;color:#111827">Plotly</div>
+                <div style="font-size:0.65rem;color:#9CA3AF;margin-top:2px">Charts</div>
+            </div>
+            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                        padding:0.9rem 0.5rem;text-align:center">
+                <div style="font-size:1.3rem;margin-bottom:0.3rem">🌤</div>
+                <div style="font-size:0.78rem;font-weight:600;color:#111827">Open-Meteo</div>
+                <div style="font-size:0.65rem;color:#9CA3AF;margin-top:2px">Weather API</div>
+            </div>
+            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                        padding:0.9rem 0.5rem;text-align:center">
+                <div style="font-size:1.3rem;margin-bottom:0.3rem">🔗</div>
+                <div style="font-size:0.78rem;font-weight:600;color:#111827">httpx</div>
+                <div style="font-size:0.65rem;color:#9CA3AF;margin-top:2px">HTTP client</div>
+            </div>
+            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                        padding:0.9rem 0.5rem;text-align:center">
+                <div style="font-size:1.3rem;margin-bottom:0.3rem">📦</div>
+                <div style="font-size:0.78rem;font-weight:600;color:#111827">Render.com</div>
+                <div style="font-size:0.65rem;color:#9CA3AF;margin-top:2px">Deployment</div>
+            </div>
+        </div>
+    </div>
     """, unsafe_allow_html=True)
-
-    _stack = [
-        ("🐍", "Python 3.11",  "Core language"),
-        ("⚡", "FastAPI",       "Backend REST API"),
-        ("🎈", "Streamlit",     "Frontend dashboard"),
-        ("🌲", "scikit-learn",  "Random Forest"),
-        ("⚡", "XGBoost",       "Gradient boosting"),
-        ("🔥", "PyTorch",       "Neural network"),
-        ("📊", "Plotly",        "Interactive charts"),
-        ("🌤", "Open-Meteo",    "Live weather API"),
-        ("🔗", "httpx",         "HTTP client"),
-        ("📦", "Render.com",    "Cloud deployment"),
-    ]
-
-    # Row 1: 5 items
-    r1 = st.columns(5, gap="small")
-    for col, (ico, name, desc) in zip(r1, _stack[:5]):
-        with col:
-            st.markdown(_tech(ico, name, desc), unsafe_allow_html=True)
-
-    st.markdown("<div style='margin-top:0.6rem'></div>", unsafe_allow_html=True)
-
-    # Row 2: 5 items
-    r2 = st.columns(5, gap="small")
-    for col, (ico, name, desc) in zip(r2, _stack[5:]):
-        with col:
-            st.markdown(_tech(ico, name, desc), unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
