@@ -30,12 +30,10 @@ def render() -> None:
     recs     = (result or {}).get("recommendations", [])
     top      = recs[0] if recs else None
 
-    n, p, k, ph = (
-        float(st.session_state.n),
-        float(st.session_state.p),
-        float(st.session_state.k),
-        float(st.session_state.ph),
-    )
+    n  = float(st.session_state.n  or 90.0)
+    p  = float(st.session_state.p  or 42.0)
+    k  = float(st.session_state.k  or 43.0)
+    ph = float(st.session_state.ph or 6.5)
     score = soil_score(n, p, k, ph)
 
     # live weather values
@@ -151,7 +149,7 @@ def render() -> None:
                 <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;
                             color:#16A34A;margin-bottom:0.3rem">LOCATION</div>
                 <div style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:#111827">
-                    {st.session_state.lat:.4f}°N &nbsp;/&nbsp; {st.session_state.lon:.4f}°E
+                    {f"{st.session_state.lat:.4f}°N" if st.session_state.lat is not None else "Not set"} &nbsp;/&nbsp; {f"{st.session_state.lon:.4f}°E" if st.session_state.lon is not None else "—"}
                 </div>
             </div>
         </div>

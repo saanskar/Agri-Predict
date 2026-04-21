@@ -45,7 +45,7 @@ if "active_page" not in st.session_state:
     st.session_state.active_page = "🏠 Dashboard"
 
 
-# ── Callback functions — each control calls one of these ─────────────────────
+# ── Callback functions ────────────────────────────────────────────────────────
 def _on_mobile_change():
     st.session_state.active_page = st.session_state._mobile_sel
 
@@ -66,7 +66,7 @@ st.selectbox(
 st.markdown('</div>', unsafe_allow_html=True)
 
 
-# ── Sidebar (hidden on mobile via CSS) ────────────────────────────────────────
+# ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("""
     <div class="sl">
@@ -87,18 +87,18 @@ with st.sidebar:
     st.markdown("<hr style='border-color:#F3F4F6;margin:0.9rem 0 0.6rem'/>",
                 unsafe_allow_html=True)
 
-    with st.spinner("Checking API…"):
+    with st.spinner("Checking model…"):
         api_ok = check_api_health()
 
     dot        = "🟢" if api_ok else "🔴"
-    badge_lbl  = "Online" if api_ok else "Starting…"
+    badge_lbl  = "Model Ready ✅" if api_ok else "Loading…"
     badge_col  = "#15803D" if api_ok else "#D97706"
-    badge_hint = "" if api_ok else "<br><span style='font-size:0.7rem;color:#9CA3AF'>Cold start ~30 s</span>"
+    badge_hint = "" if api_ok else "<br><span style='font-size:0.7rem;color:#9CA3AF'>Model files missing</span>"
     st.markdown(f"""
     <div style="padding:0.6rem 0.85rem;background:#F8FAFC;
                 border:1px solid #E5E7EB;border-radius:10px;
                 font-size:0.8rem;color:#374151">
-        {dot} Backend: <strong style="color:{badge_col}">{badge_lbl}</strong>{badge_hint}
+        {dot} Status: <strong style="color:{badge_col}">{badge_lbl}</strong>{badge_hint}
     </div>
     """, unsafe_allow_html=True)
 

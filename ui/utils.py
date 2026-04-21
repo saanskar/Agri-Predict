@@ -14,6 +14,7 @@ unit-testable.
 """
 
 from __future__ import annotations
+from functools import lru_cache
 
 import csv
 import io
@@ -49,32 +50,32 @@ class NetworkError(Exception):
 
 # ── Crop metadata ─────────────────────────────────────────────────────────────
 
+# Crop metadata derived from actual training dataset ranges
+# N/P/K ranges, temperature, humidity, rainfall, pH from Crop_recommendation dataset
 CROP_META: dict[str, dict[str, str]] = {
-    "rice":          {"emoji": "🌾", "water": "High",    "yield": "4–6 t/ha",    "profit": "Medium"},
-    "wheat":         {"emoji": "🌾", "water": "Medium",  "yield": "3–5 t/ha",    "profit": "Medium"},
-    "maize":         {"emoji": "🌽", "water": "Medium",  "yield": "5–8 t/ha",    "profit": "High"},
-    "corn":          {"emoji": "🌽", "water": "Medium",  "yield": "5–8 t/ha",    "profit": "High"},
-    "cotton":        {"emoji": "🌿", "water": "Medium",  "yield": "2–4 t/ha",    "profit": "High"},
-    "sugarcane":     {"emoji": "🎋", "water": "High",    "yield": "60–80 t/ha",  "profit": "High"},
-    "jute":          {"emoji": "🌱", "water": "High",    "yield": "2–3 t/ha",    "profit": "Low"},
-    "coffee":        {"emoji": "☕", "water": "Medium",  "yield": "0.5–1 t/ha",  "profit": "Very High"},
-    "banana":        {"emoji": "🍌", "water": "High",    "yield": "20–30 t/ha",  "profit": "Medium"},
-    "mango":         {"emoji": "🥭", "water": "Low",     "yield": "8–12 t/ha",   "profit": "High"},
-    "grapes":        {"emoji": "🍇", "water": "Medium",  "yield": "10–20 t/ha",  "profit": "Very High"},
-    "watermelon":    {"emoji": "🍉", "water": "Medium",  "yield": "20–30 t/ha",  "profit": "Medium"},
-    "apple":         {"emoji": "🍎", "water": "Medium",  "yield": "15–25 t/ha",  "profit": "High"},
-    "orange":        {"emoji": "🍊", "water": "Medium",  "yield": "15–25 t/ha",  "profit": "High"},
-    "papaya":        {"emoji": "🍈", "water": "Medium",  "yield": "30–40 t/ha",  "profit": "Medium"},
-    "pomegranate":   {"emoji": "🍎", "water": "Low",     "yield": "8–12 t/ha",   "profit": "Very High"},
-    "coconut":       {"emoji": "🥥", "water": "Medium",  "yield": "5–8 t/ha",    "profit": "Medium"},
-    "chickpea":      {"emoji": "🫘", "water": "Low",     "yield": "1–2 t/ha",    "profit": "Medium"},
-    "lentil":        {"emoji": "🫘", "water": "Low",     "yield": "1–2 t/ha",    "profit": "Medium"},
-    "mungbean":      {"emoji": "🫘", "water": "Low",     "yield": "1–2 t/ha",    "profit": "Low"},
-    "blackgram":     {"emoji": "🫘", "water": "Low",     "yield": "0.8–1.5 t/ha","profit": "Low"},
-    "kidney beans":  {"emoji": "🫘", "water": "Medium",  "yield": "1–2 t/ha",    "profit": "Medium"},
-    "moth beans":    {"emoji": "🫘", "water": "Low",     "yield": "0.5–1 t/ha",  "profit": "Low"},
-    "pigeonpeas":    {"emoji": "🫘", "water": "Low",     "yield": "1–2 t/ha",    "profit": "Low"},
-    "soybean":       {"emoji": "🫛", "water": "Medium",  "yield": "2–3 t/ha",    "profit": "High"},
+    # Crops present in the training dataset (22 classes)
+    "rice":        {"emoji": "🌾", "water": "Very High", "yield": "4–6 t/ha",   "profit": "Medium",    "n_range": "60–99",   "p_range": "35–60",  "k_range": "35–45",  "rain": "~236 mm", "ph": "6.4"},
+    "maize":       {"emoji": "🌽", "water": "Medium",    "yield": "3–6 t/ha",   "profit": "High",      "n_range": "60–100",  "p_range": "35–60",  "k_range": "15–25",  "rain": "~85 mm",  "ph": "6.2"},
+    "jute":        {"emoji": "🌿", "water": "High",      "yield": "2–3 t/ha",   "profit": "Low",       "n_range": "60–100",  "p_range": "35–60",  "k_range": "35–45",  "rain": "~175 mm", "ph": "6.7"},
+    "cotton":      {"emoji": "🌿", "water": "Medium",    "yield": "2–4 t/ha",   "profit": "High",      "n_range": "100–140", "p_range": "35–60",  "k_range": "15–25",  "rain": "~80 mm",  "ph": "6.9"},
+    "coconut":     {"emoji": "🥥", "water": "High",      "yield": "5–8 t/ha",   "profit": "Medium",    "n_range": "0–40",    "p_range": "5–30",   "k_range": "25–35",  "rain": "~176 mm", "ph": "6.0"},
+    "papaya":      {"emoji": "🍈", "water": "High",      "yield": "30–40 t/ha", "profit": "Medium",    "n_range": "31–70",   "p_range": "46–70",  "k_range": "45–55",  "rain": "~143 mm", "ph": "6.7"},
+    "orange":      {"emoji": "🍊", "water": "Medium",    "yield": "15–25 t/ha", "profit": "High",      "n_range": "0–40",    "p_range": "5–30",   "k_range": "5–15",   "rain": "~111 mm", "ph": "7.0"},
+    "apple":       {"emoji": "🍎", "water": "Medium",    "yield": "15–25 t/ha", "profit": "High",      "n_range": "0–40",    "p_range": "120–145","k_range": "195–205","rain": "~113 mm", "ph": "5.9"},
+    "muskmelon":   {"emoji": "🍈", "water": "Low",       "yield": "10–20 t/ha", "profit": "Medium",    "n_range": "80–120",  "p_range": "5–30",   "k_range": "45–55",  "rain": "~25 mm",  "ph": "6.4"},
+    "watermelon":  {"emoji": "🍉", "water": "Medium",    "yield": "20–30 t/ha", "profit": "Medium",    "n_range": "80–120",  "p_range": "5–30",   "k_range": "45–55",  "rain": "~51 mm",  "ph": "6.5"},
+    "grapes":      {"emoji": "🍇", "water": "Medium",    "yield": "10–20 t/ha", "profit": "Very High", "n_range": "0–40",    "p_range": "120–145","k_range": "195–205","rain": "~70 mm",  "ph": "6.0"},
+    "mango":       {"emoji": "🥭", "water": "Low",       "yield": "8–12 t/ha",  "profit": "High",      "n_range": "0–40",    "p_range": "15–40",  "k_range": "25–35",  "rain": "~95 mm",  "ph": "5.8"},
+    "banana":      {"emoji": "🍌", "water": "High",      "yield": "20–30 t/ha", "profit": "Medium",    "n_range": "80–120",  "p_range": "70–95",  "k_range": "45–55",  "rain": "~105 mm", "ph": "6.0"},
+    "pomegranate": {"emoji": "🍎", "water": "Low",       "yield": "8–12 t/ha",  "profit": "Very High", "n_range": "0–40",    "p_range": "5–30",   "k_range": "35–45",  "rain": "~108 mm", "ph": "6.4"},
+    "lentil":      {"emoji": "🫘", "water": "Low",       "yield": "1–2 t/ha",   "profit": "Medium",    "n_range": "0–40",    "p_range": "55–80",  "k_range": "15–25",  "rain": "~46 mm",  "ph": "6.9"},
+    "blackgram":   {"emoji": "🫘", "water": "Low",       "yield": "0.8–1.5 t/ha","profit": "Low",      "n_range": "20–60",   "p_range": "55–80",  "k_range": "15–25",  "rain": "~68 mm",  "ph": "7.1"},
+    "mungbean":    {"emoji": "🫘", "water": "Low",       "yield": "1–2 t/ha",   "profit": "Low",       "n_range": "0–40",    "p_range": "35–60",  "k_range": "15–25",  "rain": "~48 mm",  "ph": "6.7"},
+    "mothbeans":   {"emoji": "🫘", "water": "Low",       "yield": "0.5–1 t/ha", "profit": "Low",       "n_range": "0–40",    "p_range": "35–60",  "k_range": "15–25",  "rain": "~51 mm",  "ph": "6.8"},
+    "pigeonpeas":  {"emoji": "🫘", "water": "Low",       "yield": "1–2 t/ha",   "profit": "Low",       "n_range": "0–40",    "p_range": "55–80",  "k_range": "15–25",  "rain": "~150 mm", "ph": "5.8"},
+    "kidneybeans": {"emoji": "🫘", "water": "Medium",    "yield": "1–2 t/ha",   "profit": "Medium",    "n_range": "0–40",    "p_range": "55–80",  "k_range": "15–25",  "rain": "~106 mm", "ph": "5.8"},
+    "chickpea":    {"emoji": "🫘", "water": "Low",       "yield": "1–2 t/ha",   "profit": "Medium",    "n_range": "20–60",   "p_range": "55–80",  "k_range": "75–85",  "rain": "~80 mm",  "ph": "7.3"},
+    "coffee":      {"emoji": "☕", "water": "Medium",    "yield": "0.5–1 t/ha", "profit": "Very High", "n_range": "80–120",  "p_range": "15–40",  "k_range": "25–35",  "rain": "~158 mm", "ph": "6.8"},
 }
 _DEFAULT_META: dict[str, str] = {"emoji": "🌿", "water": "Medium", "yield": "Varies", "profit": "Medium"}
 
@@ -89,19 +90,31 @@ def crop_emoji(name: str) -> str:
 
 # ── Session state defaults ─────────────────────────────────────────────────────
 
+# ── Dataset reference values (from Crop_recommendation.csv, 2200 rows) ───────
+# Crop typical N / P / K / ph values from training data:
+#   rice:      N=80,  P=48, K=40, ph=6.43, rain=236  ← good generic default
+#   muskmelon: N=100, P=18, K=50, ph=6.36, rain=25   ← wins when rain≈0
+#   maize:     N=78,  P=48, K=20, ph=6.25, rain=85
+#   cotton:    N=118, P=46, K=20, ph=6.91, rain=80
+# NOTE: Rain comes from live weather API — cannot be set here.
+# Defaults below are dataset-representative to avoid biased initial output.
+
 DEFAULTS: dict[str, Any] = {
-    "lat":         20.0,
-    "lon":         78.0,
-    "n":           50.0,
-    "p":           40.0,
-    "k":           40.0,
-    "ph":          6.5,
-    "top_k":       5,
-    "last_result": None,   # full API response dict
-    "last_weather":None,   # weather sub-dict
-    "history":     [],     # list[dict]
-    "request_geo": False,
-    "api_error":   None,   # last error string | None
+    "lat":          None,
+    "lon":          None,
+    "n":            80.0,
+    "p":            48.0,
+    "k":            40.0,
+    "ph":           6.5,
+    "temperature":  25.0,
+    "humidity":     70.0,
+    "rainfall":     100.0,
+    "top_k":        5,
+    "last_result":  None,
+    "last_weather": None,
+    "history":      [],
+    "request_geo":  False,
+    "api_error":    None,
 }
 
 
@@ -114,51 +127,87 @@ def init_session(st_module: Any) -> None:
 
 # ── API call ──────────────────────────────────────────────────────────────────
 
+# ── Local model inference ────────────────────────────────────────────────────
+# Models are loaded once at import time and cached.
+# This eliminates all backend/API/deployment issues permanently.
+
+import os as _os
+from pathlib import Path as _Path
+import numpy as _np
+
+_ARTIFACTS_DIR = _Path(__file__).parent / "model_artifacts"
+
+
+@lru_cache(maxsize=1)
+def _load_models() -> tuple:
+    """Load and cache RF + XGB models + preprocessor + labels."""
+    try:
+        import joblib as _joblib
+        import json as _json
+
+        labels = _json.loads((_ARTIFACTS_DIR / "labels.json").read_text())
+        pre    = _joblib.load(_ARTIFACTS_DIR / "preprocessor.joblib")
+        rf     = _joblib.load(_ARTIFACTS_DIR / "random_forest.joblib")
+        xgb    = _joblib.load(_ARTIFACTS_DIR / "xgboost.joblib")
+        return labels, pre, rf, xgb
+    except Exception as exc:
+        raise RuntimeError(f"Failed to load models: {exc}") from exc
+
+
 def call_recommendations(
     lat: float, lon: float,
     n: float, p: float, k: float, ph: float,
+    temperature_c: float,
+    humidity_pct: float,
+    rainfall_mm: float,
     top_k: int = 5,
 ) -> dict[str, Any]:
     """
-    POST /recommendations to the V1 FastAPI backend.
+    Run inference LOCALLY using bundled model artifacts.
+    No backend server needed — model runs directly in Streamlit.
 
-    Returns the parsed JSON response dict on success.
-    Raises:
-        APIError     — non-2xx HTTP status
-        NetworkError — connection / timeout
+    All 7 features are user-provided, matching the training data distribution
+    exactly. Returns the same response format as the old REST API.
     """
-    payload: dict[str, Any] = {
-        "location": {"lat": lat, "lon": lon},
-        "soil":     {"n": n, "p": p, "k": k, "ph": ph},
-        "top_k":    top_k,
-    }
+    import warnings
+    warnings.filterwarnings("ignore")
+
     try:
-        with httpx.Client(timeout=_TIMEOUT) as client:
-            resp = client.post(f"{API_BASE}/recommendations", json=payload)
-    except (httpx.ConnectError, httpx.TimeoutException, httpx.NetworkError) as exc:
+        labels, pre, rf, xgb_model = _load_models()
+    except RuntimeError as exc:
         raise NetworkError(str(exc)) from exc
-    except Exception as exc:
-        raise NetworkError(f"Unexpected transport error: {exc}") from exc
-
-    if not resp.is_success:
-        try:
-            detail = resp.json().get("detail", resp.text)
-        except Exception:
-            detail = resp.text
-        raise APIError(resp.status_code, str(detail))
 
     try:
-        return resp.json()
+        x   = _np.array([[n, p, k, temperature_c, humidity_pct, ph, rainfall_mm]],
+                         dtype=_np.float32)
+        xt  = pre.transform(x)
+        rf_p  = rf.predict_proba(xt)[0]
+        xgb_p = xgb_model.predict_proba(xt)[0]
+        ens   = (rf_p + xgb_p) / 2.0
+
+        k_safe = min(max(1, top_k), len(labels))
+        top_idx = _np.argsort(-ens)[:k_safe].tolist()
+
+        return {
+            "weather": {
+                "temperature_c":          temperature_c,
+                "relative_humidity_pct":  humidity_pct,
+                "rainfall_mm":            rainfall_mm,
+            },
+            "recommendations": [
+                {"crop": labels[i], "probability": float(ens[i])}
+                for i in top_idx
+            ],
+        }
     except Exception as exc:
-        raise NetworkError(f"Could not parse API response: {exc}") from exc
+        raise NetworkError(f"Local inference failed: {exc}") from exc
 
 
 def check_api_health() -> bool:
-    """Returns True if the backend /health endpoint responds OK."""
+    """Returns True if local model artifacts are loaded and ready."""
     try:
-        with httpx.Client(timeout=8.0) as client:
-            resp = client.get(f"{API_BASE}/health")
-            return resp.status_code == 200
+        _load_models()
+        return True
     except Exception:
         return False
 
@@ -208,7 +257,12 @@ def history_to_csv(history: list[dict[str, Any]]) -> str:
 def soil_score(n: float, p: float, k: float, ph: float) -> int:
     """
     0–100 heuristic soil health index.
-    40-120 / 30-100 / 30-100 for N/P/K, 5.5-7.5 for pH are the ideal bands.
+    Based on actual training dataset ranges:
+      N: 0–140 (dataset max), typical productive range 20–120
+      P: 5–145 (dataset max), typical productive range 15–80
+      K: 5–205 (dataset max), typical productive range 15–85
+      pH: 3.5–9.9 (dataset), ideal 5.5–7.5
+    Score reflects how well values fall within commonly cultivated ranges.
     """
     def _band(v: float, lo: float, hi: float, ok: int, near: int, far: int) -> int:
         if lo <= v <= hi:
@@ -219,52 +273,65 @@ def soil_score(n: float, p: float, k: float, ph: float) -> int:
         return far
 
     return min(100,
-        _band(n,  40, 120, 30, 18, 5) +
-        _band(p,  30, 100, 25, 14, 4) +
-        _band(k,  30, 100, 25, 14, 4) +
+        _band(n,  20, 120, 30, 18, 5) +
+        _band(p,  15,  80, 25, 14, 4) +
+        _band(k,  15,  85, 25, 14, 4) +
         _band(ph, 5.5, 7.5, 20, 12, 3)
     )
 
 
 def soil_tips(n: float, p: float, k: float, ph: float) -> list[tuple[str, str]]:
     """
-    Returns list of (message, level) where level ∈ {'ok', 'warn', 'danger'}.
+    Returns list of (message, level) based on actual dataset crop ranges.
+    Dataset N: 0–140, P: 5–145, K: 5–205, pH: 3.5–9.9
     """
     tips: list[tuple[str, str]] = []
 
-    if n < 20:
-        tips.append(("⚠️ Nitrogen very low — apply urea or DAP fertiliser urgently.", "danger"))
-    elif n < 40:
-        tips.append(("💡 Nitrogen slightly low — add compost or ammonium sulphate.", "warn"))
-    elif n > 180:
-        tips.append(("⚠️ Nitrogen excess — may cause leaf burn; reduce N inputs.", "warn"))
+    # Nitrogen — dataset range 0–140
+    if n < 10:
+        tips.append(("⚠️ Nitrogen very low (<10) — only suits low-N crops like coconut, orange. Apply urea for most crops.", "danger"))
+    elif n < 20:
+        tips.append(("💡 Nitrogen low (10–20) — suitable for pulses. Add compost or urea for cereals.", "warn"))
+    elif n <= 120:
+        tips.append(("✅ Nitrogen is in a productive range for most dataset crops.", "ok"))
     else:
-        tips.append(("✅ Nitrogen level is adequate.", "ok"))
+        tips.append(("⚠️ Nitrogen very high (>120) — only cotton can use this level. Risk of leaf burn.", "warn"))
 
-    if p < 15:
-        tips.append(("⚠️ Phosphorus very low — apply SSP or rock phosphate.", "danger"))
-    elif p < 30:
-        tips.append(("💡 Phosphorus slightly low — add bone meal or DAP.", "warn"))
+    # Phosphorus — dataset range 5–145
+    if p < 5:
+        tips.append(("⚠️ Phosphorus critically low — apply SSP or DAP immediately.", "danger"))
+    elif p < 15:
+        tips.append(("💡 Phosphorus low — suitable for muskmelon/watermelon. Add bone meal for other crops.", "warn"))
+    elif p <= 80:
+        tips.append(("✅ Phosphorus is in a productive range.", "ok"))
+    elif p <= 145:
+        tips.append(("💡 High phosphorus (>80) — ideal for apple and grapes only.", "info"))
     else:
-        tips.append(("✅ Phosphorus level is adequate.", "ok"))
+        tips.append(("⚠️ Phosphorus exceeds dataset maximum — may inhibit zinc/iron uptake.", "danger"))
 
-    if k < 15:
-        tips.append(("⚠️ Potassium very low — apply MOP or wood ash.", "danger"))
-    elif k < 30:
-        tips.append(("💡 Potassium slightly low — consider potash fertiliser.", "warn"))
+    # Potassium — dataset range 5–205
+    if k < 5:
+        tips.append(("⚠️ Potassium critically low — apply MOP or wood ash.", "danger"))
+    elif k < 15:
+        tips.append(("💡 Potassium low — suitable for orange only. Add potash for other crops.", "warn"))
+    elif k <= 85:
+        tips.append(("✅ Potassium is in a productive range for most crops.", "ok"))
+    elif k <= 205:
+        tips.append(("💡 Very high potassium (>85) — only apple/grapes grow in this range.", "info"))
     else:
-        tips.append(("✅ Potassium level is adequate.", "ok"))
+        tips.append(("⚠️ Potassium exceeds dataset maximum.", "danger"))
 
+    # pH — dataset range 3.5–9.9, most crops prefer 5.5–7.5
     if ph < 5.0:
-        tips.append(("⚠️ Very acidic soil (pH < 5) — apply agricultural lime.", "danger"))
+        tips.append(("⚠️ Very acidic soil (pH<5) — apply agricultural lime to raise pH.", "danger"))
     elif ph < 5.5:
-        tips.append(("💡 Mildly acidic — dolomite lime can raise pH gradually.", "warn"))
-    elif ph > 8.0:
-        tips.append(("⚠️ Highly alkaline (pH > 8) — apply elemental sulphur.", "danger"))
-    elif ph > 7.5:
-        tips.append(("💡 Slightly alkaline — watch micronutrient availability.", "warn"))
+        tips.append(("💡 Mildly acidic — suitable for apple/banana/coffee. Add lime for neutral crops.", "warn"))
+    elif ph <= 7.5:
+        tips.append(("✅ pH is in the ideal range (5.5–7.5) for most dataset crops.", "ok"))
+    elif ph <= 8.0:
+        tips.append(("💡 Slightly alkaline — chickpea tolerates this. Watch micronutrient availability.", "warn"))
     else:
-        tips.append(("✅ Soil pH is in the ideal range.", "ok"))
+        tips.append(("⚠️ Highly alkaline (pH>8) — very few crops tolerate this. Apply elemental sulphur.", "danger"))
 
     return tips
 
