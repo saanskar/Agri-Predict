@@ -147,9 +147,8 @@ def _load_models() -> tuple:
 
         labels = _json.loads((_ARTIFACTS_DIR / "labels.json").read_text())
         pre    = _joblib.load(_ARTIFACTS_DIR / "preprocessor.joblib")
-        rf     = _joblib.load(_ARTIFACTS_DIR / "random_forest.joblib")
         xgb    = _joblib.load(_ARTIFACTS_DIR / "xgboost.joblib")
-        return labels, pre, rf, xgb
+        return labels, pre, xgb
     except Exception as exc:
         raise RuntimeError(f"Failed to load models: {exc}") from exc
 
@@ -173,7 +172,7 @@ def call_recommendations(
     warnings.filterwarnings("ignore")
 
     try:
-        labels, pre, rf, xgb_model = _load_models()
+        labels, pre, xgb_model = _load_models()
     except RuntimeError as exc:
         raise NetworkError(str(exc)) from exc
 
@@ -181,9 +180,7 @@ def call_recommendations(
         x   = _np.array([[n, p, k, temperature_c, humidity_pct, ph, rainfall_mm]],
                          dtype=_np.float32)
         xt  = pre.transform(x)
-        rf_p  = rf.predict_proba(xt)[0]
-        xgb_p = xgb_model.predict_proba(xt)[0]
-        ens   = (rf_p + xgb_p) / 2.0
+        ens   = xgb_model.predict_proba(xt)[0]
 
         k_safe = min(max(1, top_k), len(labels))
         top_idx = _np.argsort(-ens)[:k_safe].tolist()
