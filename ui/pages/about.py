@@ -148,44 +148,6 @@ def render() -> None:
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Dataset — responsive grid via HTML ────────────────────────
-    st.markdown("""
-    <div class="gc">
-        <div class="gc-title">📂 Dataset</div>
-        <div style="display:grid;
-                    grid-template-columns:repeat(4,1fr);
-                    gap:0.75rem;margin-bottom:0.9rem">
-            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
-                        padding:1rem 0.8rem;text-align:center">
-                <div style="font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;
-                            color:#16A34A;font-weight:600;margin-bottom:0.3rem">Training Records</div>
-                <div style="font-size:1rem;font-weight:700;color:#111827">2,200</div>
-            </div>
-            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
-                        padding:1rem 0.8rem;text-align:center">
-                <div style="font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;
-                            color:#16A34A;font-weight:600;margin-bottom:0.3rem">Crop Classes</div>
-                <div style="font-size:1rem;font-weight:700;color:#111827">22</div>
-            </div>
-            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
-                        padding:1rem 0.8rem;text-align:center">
-                <div style="font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;
-                            color:#16A34A;font-weight:600;margin-bottom:0.3rem">Input Features</div>
-                <div style="font-size:1rem;font-weight:700;color:#111827">7</div>
-            </div>
-            <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
-                        padding:1rem 0.8rem;text-align:center">
-                <div style="font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;
-                            color:#16A34A;font-weight:600;margin-bottom:0.3rem">Source</div>
-                <div style="font-size:1rem;font-weight:700;color:#111827">Kaggle / UCI</div>
-            </div>
-        </div>
-        <div style="font-size:0.8rem;color:#6B7280">
-            Features: Nitrogen · Phosphorus · Potassium · Temperature · Humidity · Rainfall · pH
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
     # ── Tech Stack — responsive grid via HTML ─────────────────────
     st.markdown("""
     <div class="gc">
