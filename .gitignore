@@ -31,3 +31,4 @@ Thumbs.db
 
 random_forest.joblib
 *.onnx
+*.csv
