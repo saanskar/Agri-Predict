@@ -24,17 +24,17 @@ except Exception:
 # ── State + Season → Climate lookup (IMD normals) ─────────────────────────────
 # Format: (avg_temp_C, avg_humidity_%, avg_monthly_rainfall_mm)
 CLIMATE: dict[str, dict[str, tuple[float,float,float]]] = {
-    "Bihar":            {"Kharif":(28,78,150), "Rabi":(18,60,20),  "Zaid":(35,45,15)},
-    "Gujarat":          {"Kharif":(30,72,80),  "Rabi":(22,50,10),  "Zaid":(38,35,5)},
-    "Jharkhand":        {"Kharif":(27,80,180), "Rabi":(17,58,25),  "Zaid":(34,42,12)},
-    "Karnataka":        {"Kharif":(24,75,130), "Rabi":(20,60,40),  "Zaid":(30,45,20)},
-    "Madhya Pradesh":   {"Kharif":(28,73,140), "Rabi":(18,52,18),  "Zaid":(38,30,8)},
-    "Maharashtra":      {"Kharif":(27,75,120), "Rabi":(22,55,15),  "Zaid":(36,35,10)},
-    "Punjab":           {"Kharif":(30,70,130), "Rabi":(14,58,25),  "Zaid":(38,32,8)},
-    "Tamil Nadu":       {"Kharif":(28,78,90),  "Rabi":(25,72,150), "Zaid":(33,55,30)},
-    "Uttar Pradesh":    {"Kharif":(29,74,150), "Rabi":(16,58,22),  "Zaid":(37,35,10)},
-    "West Bengal":      {"Kharif":(29,85,230), "Rabi":(20,68,25),  "Zaid":(34,55,15)},
-    "Other / Manual":   {"Kharif":(28,75,120), "Rabi":(20,58,30),  "Zaid":(35,38,15)},
+    "Bihar":            {"Kharif":(28,78,150), "Rabi":(17,55,30),  "Zaid":(35,50,15)},
+    "Gujarat":          {"Kharif":(30,72, 80), "Rabi":(20,45,12),  "Zaid":(38,30, 5)},
+    "Jharkhand":        {"Kharif":(27,80,180), "Rabi":(16,52,28),  "Zaid":(34,42,12)},
+    "Karnataka":        {"Kharif":(24,75,130), "Rabi":(20,58,40),  "Zaid":(30,45,20)},
+    "Madhya Pradesh":   {"Kharif":(28,73,140), "Rabi":(17,48,20),  "Zaid":(38,30, 8)},
+    "Maharashtra":      {"Kharif":(27,75,120), "Rabi":(21,52,18),  "Zaid":(36,35,10)},
+    "Punjab":           {"Kharif":(30,78,130), "Rabi":(15,20,55),  "Zaid":(38,28, 8)},
+    "Tamil Nadu":       {"Kharif":(28,78, 90), "Rabi":(24,70,150), "Zaid":(33,55,30)},
+    "Uttar Pradesh":    {"Kharif":(29,74,150), "Rabi":(15,22,45),  "Zaid":(37,35,10)},
+    "West Bengal":      {"Kharif":(29,85,230), "Rabi":(19,62,28),  "Zaid":(34,55,15)},
+    "Other / Manual":   {"Kharif":(28,75,120), "Rabi":(18,45,35),  "Zaid":(35,38,15)},
 }
 
 SEASON_INFO = {
