@@ -29,5 +29,5 @@ Thumbs.db
 .idea/
 .vscode/
 
-
+random_forest.joblib
 *.onnx
